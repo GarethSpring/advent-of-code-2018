@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Days\Day01\Day01Tests.cs" />
     <Compile Include="Days\Day03\Day03Tests.cs" />
+    <Compile Include="Days\Day04\Day04Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +74,11 @@
     <None Include="Days\Day03\Input\input.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Days\Day04\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

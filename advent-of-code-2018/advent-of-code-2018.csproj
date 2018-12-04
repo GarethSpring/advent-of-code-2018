@@ -47,6 +47,11 @@
     <Compile Include="Days\Day03\Claim.cs" />
     <Compile Include="Days\Day03\ClaimFactory.cs" />
     <Compile Include="Days\Day03\Solution.cs" />
+    <Compile Include="Days\Day04\Guard.cs" />
+    <Compile Include="Days\Day04\GuardAction.cs" />
+    <Compile Include="Days\Day04\GuardRecordFactory.cs" />
+    <Compile Include="Days\Day04\GuardRecord.cs" />
+    <Compile Include="Days\Day04\Solution.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
