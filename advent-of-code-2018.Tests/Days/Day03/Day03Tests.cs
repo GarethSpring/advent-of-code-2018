@@ -7,7 +7,7 @@ namespace advent_of_code_2018.Tests
     public class Day03Tests
     {
         [TestMethod]
-        public void TestPart1()
+        public void Day03_TestPart1()
         {
             var Solution = new Solution();
 
@@ -17,7 +17,7 @@ namespace advent_of_code_2018.Tests
         }
 
         [TestMethod]
-        public void TestPart2()
+        public void Day03_TestPart2()
         {
             var Solution = new Solution();
 
