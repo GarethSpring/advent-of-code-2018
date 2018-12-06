@@ -54,6 +54,8 @@
     <Compile Include="Days\Day04\GuardRecord.cs" />
     <Compile Include="Days\Day04\Solution.cs" />
     <Compile Include="Days\Day05\Solution.cs" />
+    <Compile Include="Days\Day06\GridCoord.cs" />
+    <Compile Include="Days\Day06\Solution.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
