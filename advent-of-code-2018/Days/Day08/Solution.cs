@@ -17,25 +17,26 @@ namespace advent_of_code_2018.Days.Day08
 
         public int Part1()
         {
-            // Increase stack size, not ideal!
-            Thread T = new Thread(() => { Part1Private(); }, 1024 * 1024 * 32);
+            // Increase stack size, muhahaha
+            Thread T = new Thread(() => 
+            {
+                Part1Private();
+
+            }, 1024 * 1024 * 32);
 
             T.Start();
             T.Join();
 
-            int sum = 0;
-
-            foreach(Node n in nodes)
-            {
-                n.Metadata.ForEach(m => sum += m);
-            }
-                        
-            return sum;     
+            return nodes.SelectMany(node => node.Metadata).Sum();
         }
 
         public int Part2()
         {
-            Thread T = new Thread(() => { Part2Private(); }, 1024 * 1024 * 32);
+            Thread T = new Thread(() => 
+            {
+                Part2Private();
+                       
+            }, 1024 * 1024 * 32);
 
             T.Start();
             T.Join();
@@ -49,7 +50,6 @@ namespace advent_of_code_2018.Days.Day08
             {
                 LoadInput();
 
-                curPos = 0;
                 ParseInput();
             }
             catch (Exception ex)
@@ -62,12 +62,10 @@ namespace advent_of_code_2018.Days.Day08
         {
             try
             {
-                LoadInput();
-
-                curPos = 0;
+                LoadInput();                
                 firstNode = true;
                 ParseInput();
-
+              
                 parentValue = GetChildNodeValue(nodes.First(node => node.IsRoot));
             }
             catch (Exception ex)
@@ -77,10 +75,10 @@ namespace advent_of_code_2018.Days.Day08
         }
 
         private int GetChildNodeValue(Node node)
-        {
+        {          
             int nodeValue = 0;
 
-            if (node.ChildNodes.Count == 0)
+            if (!node.ChildNodes.Any())
             {
                 // If a node has no child nodes, its value is the sum of its metadata entries. 
                 node.Metadata.ForEach(i => nodeValue += i);
@@ -95,10 +93,10 @@ namespace advent_of_code_2018.Days.Day08
                     {
                         nodeValue += GetChildNodeValue(node.ChildNodes[i - 1]);
                     }
-                });                
+                });
             }
 
-            return nodeValue;
+            return nodeValue;                     
         }
 
         private void ParseInput()
@@ -179,24 +177,5 @@ namespace advent_of_code_2018.Days.Day08
         {
             input = File.ReadAllText(@"days\day08\input\input.txt");
         }
-    }
-
-    public class Node
-    {
-        public int ChildNodeCount { get; set; }
-
-        public int MetaDataCount { get; set; }
-
-        public List<Node> ChildNodes { get; set; }
-
-        public List<int> Metadata { get; set; }
-
-        public bool IsRoot { get; set; }
-
-        public Node()
-        {
-            ChildNodes = new List<Node>();
-            Metadata = new List<int>();
-        }        
     }
 }
