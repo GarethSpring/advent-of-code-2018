@@ -1,56 +1,165 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace advent_of_code_2018.Days.Day08
-{ 
+{
     public class Solution
     {
         private string input;
         private int curPos;
+        private int parentValue;
+        private bool firstNode;
 
         private List<Node> nodes = new List<Node>();
 
         public int Part1()
         {
-            LoadInput();
+            // Increase stack size, not ideal!
+            Thread T = new Thread(() => { Part1Private(); }, 1024 * 1024 * 32);
 
-            curPos = 0;
-            ParseInput();
+            T.Start();
+            T.Join();
 
-            return 0;
+            int sum = 0;
+
+            foreach(Node n in nodes)
+            {
+                n.Metadata.ForEach(m => sum += m);
+            }
+                        
+            return sum;     
+        }
+
+        public int Part2()
+        {
+            Thread T = new Thread(() => { Part2Private(); }, 1024 * 1024 * 32);
+
+            T.Start();
+            T.Join();
+
+            return parentValue;
+        }
+
+        private void Part1Private()
+        {
+            try
+            {
+                LoadInput();
+
+                curPos = 0;
+                ParseInput();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void Part2Private()
+        {
+            try
+            {
+                LoadInput();
+
+                curPos = 0;
+                firstNode = true;
+                ParseInput();
+
+                parentValue = GetChildNodeValue(nodes.First(node => node.IsRoot));
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private int GetChildNodeValue(Node node)
+        {
+            int nodeValue = 0;
+
+            if (node.ChildNodes.Count == 0)
+            {
+                // If a node has no child nodes, its value is the sum of its metadata entries. 
+                node.Metadata.ForEach(i => nodeValue += i);
+                return nodeValue;
+            }
+            else
+            {
+                // if a node does have child nodes, the metadata entries become indexes which refer to those child nodes
+                node.Metadata.Where(n => n != 0).ToList().ForEach(i =>
+                {
+                    if (i <= node.ChildNodes.Count)
+                    {
+                        nodeValue += GetChildNodeValue(node.ChildNodes[i - 1]);
+                    }
+                });                
+            }
+
+            return nodeValue;
         }
 
         private void ParseInput()
-        {
-            int curPos = 0;
-
-            while (curPos < input.Length)
-            {
-                CreateNode();
-            }
+        {           
+            CreateNode();            
         }
 
-        private void CreateNode()
+        private Node CreateNode()
         {
+            if (curPos == input.Length - 1)
+            {
+                return null;
+            }
+
             Node node = new Node();
             node.ChildNodeCount = Consume();
             node.MetaDataCount = Consume();
-
-            for (int i = 0; i <= node.ChildNodeCount; i++)
+            if (firstNode)
             {
-                CreateNode();
+                node.IsRoot = true;
+                firstNode = false;
             }
+
+            if (node.ChildNodeCount > 0)
+            {
+                for (int i = 0; i < node.ChildNodeCount; i++)
+                {
+                   node.ChildNodes.Add(CreateNode());
+                }
+            }
+            
+            if (node.MetaDataCount > 0)
+            {
+                for (int i = 0; i < node.MetaDataCount; i++)
+                {
+                    node.Metadata.Add(Consume());                     
+                }
+            }
+
+            nodes.Add(node);
+
+            return node;
         }
 
         private int Consume()
         {
-            int result = 0;
+            int result = 0;            
+
+            if (curPos == input.Length - 1)
+            {
+                // EOF when consuming 1
+                return Convert.ToInt32(input.Substring(curPos, 1));                
+            }
+
+            if (curPos == input.Length - 2)
+            {
+                // EOF when consuming 2
+                result = Convert.ToInt32(input.Substring(curPos, 2));
+                curPos += 1;
+                return result;
+            }
 
             if (input[curPos + 1] != ' ')
             {
@@ -81,6 +190,8 @@ namespace advent_of_code_2018.Days.Day08
         public List<Node> ChildNodes { get; set; }
 
         public List<int> Metadata { get; set; }
+
+        public bool IsRoot { get; set; }
 
         public Node()
         {
