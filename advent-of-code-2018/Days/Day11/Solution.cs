@@ -6,21 +6,19 @@ namespace advent_of_code_2018.Days.Day11
 {
     public class Solution
     {
-        private const int Input = 5535;
-        
+        private const int Input = 5535;        
         private const int GridSize = 300;
 
         private readonly Dictionary<string, FuelCell> cells = new Dictionary<string, FuelCell>();
-
         private readonly int[,,] powerCache = new int[301,301,301];
 
-        public Tuple<int, int> Part1()
+        public string Part1()
         {            
             InitCells();
 
-            int MaxPowerXCoord = 0;
-            int MaxPowerYCoord = 0;
-            int MaxPower = 0;
+            int maxPowerXCoord = 0;
+            int maxPowerYCoord = 0;
+            int maxPower = 0;
 
             for (int testX = 1; testX < GridSize - 2; testX++)
             {
@@ -28,28 +26,27 @@ namespace advent_of_code_2018.Days.Day11
                 {
                     int power = GetPowerLevel(testX, testY, 3);
                     {
-                        if (power > MaxPower)
+                        if (power > maxPower)
                         {
-                            MaxPower = power;
-                            MaxPowerXCoord = testX;
-                            MaxPowerYCoord = testY;
+                            maxPower = power;
+                            maxPowerXCoord = testX;
+                            maxPowerYCoord = testY;
                         }
                     }
                 }
             }
-                      
-            return new Tuple<int, int>(MaxPowerXCoord, MaxPowerYCoord);
+
+            return $"{maxPowerXCoord},{maxPowerYCoord}";
         }
 
-        public void Part2()
+        public string Part2()
         {
             InitCells();
 
-            int MaxPowerXCoord = 0;
-            int MaxPowerYCoord = 0;
-            int MaxPowerSampleSize = 0;
-            int MaxPower = 0;
-
+            int maxPowerXCoord = 0;
+            int maxPowerYCoord = 0;
+            int maxPowerSampleSize = 0;
+            int maxPower = 0;
 
             for (int sampleSize = 2; sampleSize <= GridSize; sampleSize++)
             {
@@ -62,23 +59,22 @@ namespace advent_of_code_2018.Days.Day11
 
                             powerCache[x, y, sampleSize] = power;
 
-                            if (power > MaxPower)
+                            if (power > maxPower)
                             {
-                                MaxPower = power;
-                                MaxPowerXCoord = x;
-                                MaxPowerYCoord = y;
-                                MaxPowerSampleSize = sampleSize;
+                                maxPower = power;
+                                maxPowerXCoord = x;
+                                maxPowerYCoord = y;
+                                maxPowerSampleSize = sampleSize;
                             }
                         }
                     }
                 }
 
+                // Progress
                 Debug.WriteLine(sampleSize);
             }
 
-            Debug.WriteLine(MaxPowerXCoord);
-            Debug.WriteLine(MaxPowerYCoord);
-            Debug.WriteLine(MaxPowerSampleSize);
+            return $"{maxPowerXCoord},{maxPowerYCoord},{maxPowerSampleSize}";
         }
 
         private int GetPowerLevelWithCache(int x, int y, int size)
@@ -96,7 +92,6 @@ namespace advent_of_code_2018.Days.Day11
             }
             return power;
         }
-
 
         private int GetPowerLevel(int x, int y, int size)
         {                                      
