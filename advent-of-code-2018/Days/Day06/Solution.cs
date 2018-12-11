@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace advent_of_code_2018.Days.Day06
 {
@@ -26,54 +21,73 @@ namespace advent_of_code_2018.Days.Day06
 
             CalculateClosest();
 
-            //FlagInfiniteAreaCoords();
+            FlagInfiniteAreaCoords();
 
-            var z = areaDict.Where(b => b.Value.Closest != ".").GroupBy(a => a.Value.Closest).OrderByDescending(g => g.Count())
+            var infiniteAreas = coords.Where(c => c.InifiniteArea).Select(c => c.Name);
+
+            var largestArea = areaDict
+                .Where(b => b.Value.Closest != "." && !infiniteAreas.Contains(b.Value.Closest))
+                .GroupBy(a => a.Value.Closest)
+                .OrderByDescending(g => g.Count())
                 .Select(b => b.Key).First();
 
-            var count = areaDict.Count(x => x.Value.Closest == z && !x.Value.InifiniteArea);
-            //// not 10731
+            var count = areaDict.Count(x => x.Value.Closest == largestArea);
+
             return count;
         }
 
+        public int Part2()
+        {
+            Part1();
+
+            foreach (KeyValuePair<string, GridCoord> kvp in areaDict)
+            {
+                CalcDistanceToAllCoords(kvp.Value);
+            }
+
+            return areaDict.Where(b => b.Value.DistanceToAllCoords < 10000).Count();            
+        }
+
+        private void CalcDistanceToAllCoords(GridCoord gridCoord)
+        {
+            foreach(GridCoord c in coords)
+            {
+                gridCoord.DistanceToAllCoords += GetDistance(gridCoord, c);
+            }
+        }      
+
         private void CalculateClosest()
         {
-            // For every marked coord, calculate distance to every coord. If it's less than the existing ClosestDistance, update name to closest coord
-            // If equal, mark as equidistant
-
-            //int i = 0;
-
-            foreach (GridCoord coord in coords)
+            foreach (GridCoord coord in coords)         
             {
-                SetClosestCoordName(coord);
-                //Debug.WriteLine(i);
-               // i++;
+                SetClosestCoordName(coord);                
             }                
         }
 
-        private void SetClosestCoordName(GridCoord coord)
+        private void SetClosestCoordName(GridCoord coord)        
         {
             foreach (KeyValuePair<string, GridCoord> kvp in areaDict)
-            {
-                           
-                int distance = Math.Abs(GetDistance(kvp.Value, coord));
+            {                           
+                int distance = GetDistance(kvp.Value, coord);
 
                 if (distance < kvp.Value.ClosestDistance)
                 {
                     kvp.Value.ClosestDistance = distance;
                     kvp.Value.Closest = coord.Name;
+                    kvp.Value.IsEquidistant = false;
                 }
                 else if (distance == kvp.Value.ClosestDistance)
                 {
                     kvp.Value.IsEquidistant = true;
                     kvp.Value.Closest = ".";
+                    kvp.Value.ClosestDistance = distance;
                 }                
             }      
         }
 
-        private int GetDistance(Coord gc1, Coord gc2)
+        private int GetDistance(GridCoord gc1, GridCoord gc2)
         {
-            return (gc2.X - gc1.X) + (gc2.Y - gc1.Y);
+            return Math.Abs(gc1.X - gc2.X) + Math.Abs(gc1.Y - gc2.Y);
         }
 
         private void FlagInfiniteAreaCoords()
@@ -82,7 +96,7 @@ namespace advent_of_code_2018.Days.Day06
             {
                 if (IsInfinite(coord.X, coord.Y))
                 {
-                    foreach(GridCoord c in areaDict.Values.Where(a => a.Closest == coord.Closest))
+                    foreach(GridCoord c in coords.Where(x => coord.Closest == x.Name))
                     {
                         c.InifiniteArea = true;
                     }
@@ -108,25 +122,14 @@ namespace advent_of_code_2018.Days.Day06
             {
                 for (int j = 0; j < gridSize; j++)
                 {
-                    
+                    infiniteArea = IsInfinite(i, j);               
 
-                    if (i == 0 || i >= gridSize - 1 || j == 0 || j >= gridSize - 1)
+                    areaDict.Add($"{i},{j}", new GridCoord
                     {
-                        infiniteArea = true;
-                    }
-                    else
-                    {
-                        infiniteArea = false;
-                    }
-
-                    areaDict.Add($"{i},{j}", new GridCoord { X = i, Y = j, IsMarked = false, ClosestDistance = Int32.MaxValue, Name = GetKey(i, j), InifiniteArea = infiniteArea});
+                        X = i, Y = j, ClosestDistance = Int32.MaxValue, Name = GetKey(i, j), InifiniteArea = infiniteArea
+                    });
 
                 }
-            }
-
-            foreach (var coord in coords)
-            {
-                areaDict[GetKey(coord)] = new GridCoord { X = coord.X, Y = coord.Y, IsMarked = true, ClosestDistance = Int32.MaxValue};               
             }
         }
 
@@ -136,7 +139,7 @@ namespace advent_of_code_2018.Days.Day06
                 x =>
                 {
                     string[] line = x.Split(',');
-                    coords.Add(new Coord
+                    coords.Add(new GridCoord
                     {
                         X = Convert.ToInt32(line[0]),
                         Y = Convert.ToInt32(line[1]),
@@ -146,7 +149,7 @@ namespace advent_of_code_2018.Days.Day06
                 });
         }
 
-        private string GetKey(Coord coord)
+        private string GetKey(GridCoord coord)
         {
             return $"{coord.X},{coord.Y}";
         }
