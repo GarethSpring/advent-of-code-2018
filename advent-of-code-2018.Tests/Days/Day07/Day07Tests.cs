@@ -19,6 +19,9 @@ namespace advent_of_code_2018.Tests.Days.Day07
             string result = solution.Part1();
 
             // not JNGMHBCFVWEUDYTIALQSPXZORK
+            /// "  JNGMHBCFVWEUDYTIALQSPXZORK"
+            /// //"JGFMDHNBCIVTUWEQYALSPXZORK"
+              /// "JGFMDHNBCIVTUWEQYALSPXZORK"
 
             Assert.IsTrue(result == "CABDFE");
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,109 +13,126 @@ namespace advent_of_code_2018.Days.Day07
     {
         private List<Tuple<string, string>> steps = new List<Tuple<string, string>>();
 
-        private List<Step> stepList = new List<Step>();
+        private Dictionary<string, Step> stepDict = new Dictionary<string, Step>();
 
-        private List<string> stepsAlreadyUsed = new List<string>();
+        private List<string> stepsComplete = new List<string>();
+
+        private string order = string.Empty;
 
         public string Part1()
-        {
-            string result = string.Empty;
-
+        {           
             LoadInput();
 
-            result = GetOrder();
+            BuildStepList();
 
-            return result;
+            string startStep = GetStartStep();
+            
+            DetermineOrder(startStep);
+
+            return order;
         }
 
-        private string GetOrder()
+        private string GetStartStep()
         {
-            string order = string.Empty;
+            foreach (Step startCandidate in stepDict.Values)
+            {
+                bool foundParents = false;
 
-            foreach (var s in steps)
+                foreach (Step parentCheck in stepDict.Values)
+                {
+                    if (parentCheck.Parents.Any(p => p == startCandidate.Name))
+                    {
+                        foundParents = true;
+                    }                    
+                }
+
+                if (!foundParents)
+                {
+                    return startCandidate.Name;
+                }
+            }
+
+            return null;
+        }
+
+        private void DetermineOrder(string startName)
+        {
+            //StringBuilder sb = new StringBuilder();
+            
+            stepDict[startName].IsAvailable = true;
+
+            ProcessSteps();
+        }
+   
+
+        private void ProcessSteps()
+        {
+            while (stepDict.Values.Any(s => s.IsAvailable))
+            {
+                // choose first alphabetically available step
+                Step firstAvailable = stepDict.Values.OrderBy(v => v.Name).First(s => s.IsAvailable);
+                order += firstAvailable.Name;
+                firstAvailable.IsComplete = true;
+                firstAvailable.IsAvailable = false;
+
+                // now evaluate all the other steps for availablility and flag them 
+
+                // Any step where all prereqs are complete
+                stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach( s => s.IsAvailable = true);
+            }
+            
+        }
+
+        private bool PreReqsFilled(Step x)
+        {
+            return x.PreReqs.All(s => stepDict[s].IsComplete);           
+        }
+
+        private void BuildStepList()
+        {
+            foreach (Tuple<string, string> stepTuple in steps)
             {
                 Step step;
-                if (stepList.Any(x => x.Name == s.Item2))
+
+                if (stepDict.ContainsKey(stepTuple.Item1))
                 {
-                    step = stepList.First(x => x.Name == s.Item2);                    
+                    step = stepDict[stepTuple.Item1];
                 }
                 else
                 {
-                    step = new Step(s.Item2);
-                    stepList.Add(step);
+                    step = new Step(stepTuple.Item1);
+                    stepDict.Add(stepTuple.Item1, step);
                 }
 
-                step.PreReqs.Add(s.Item1);
-                step.PreReqs.Sort();
+                step.Parents.Add(stepTuple.Item2);
+                step.Parents.Sort();
             }
 
-            // add steps with no prereqs
+
+
+            // Add steps with no parents
             foreach (var t in steps)
             {
-                if (!stepList.Any(x => x.Name == t.Item1))
+                if (stepDict.Values.All(x => x.Name != t.Item2))
                 {
-                    stepList.Add(new Step(t.Item1));
+                    stepDict.Add(t.Item2, new Step(t.Item2));
                 }
             }
 
-
-            StringBuilder sb = new StringBuilder();
-
-            string first = stepList.Last().Name;
-            string current = stepList.Last().Name;
-            string prevChoice = current;
-            stepsAlreadyUsed.Add(current);
-
-            sb.Append(current);
-
-            // While ChooseNext != nulll
-            while (sb.Length < steps.Count - 1)
+            // PreRequs
+            foreach (Tuple<string, string> stepTuple in steps)
             {
-                string currentCopy = current;
-                current = ChooseNext(current, prevChoice);
+                Step step;
 
-                if (current == null)
-                {
-                    ChooseNext(first, prevChoice);
-                }
+                //if (stepDict.ContainsKey(stepTuple.Item2))
+                //{
+                    step = stepDict[stepTuple.Item2];
+                //}
 
-                prevChoice = currentCopy;
-                sb.Append(current);               
-                
+                step.PreReqs.Add(stepTuple.Item1);
+                step.PreReqs.Sort();
             }
-
-
-
-            //stepArray.ToList().ForEach(s => sb.Append(s.Name));
-
-            return sb.ToString();
-        }
-
-        private string ChooseNext(string current, string prevChoice)
-        {
-            // Get Options           
-            var options = new List<string>();
-
-            steps.Where(x => x.Item1 == current && stepsAlreadyUsed.All(t => t != x.Item2)).ToList().ForEach(
-                g =>
-                {
-                    options.Add(g.Item2);
-                });
-
-            if (options.Count == 0)
-            {              
-                if (prevChoice != null)
-                {
-                    return ChooseNext(prevChoice, null);
-                }
-
-                return null;
-            }
-
-            options.Sort();
-
-            return options.First();
-        }
+        }       
      
         private void Swap(Step[] array, int i, int j)
         {
@@ -129,7 +147,6 @@ namespace advent_of_code_2018.Days.Day07
             {
                 steps.Add(new Tuple<string, string>(step.Substring(5,1), step.Substring(36,1)));
             });
-
         }
     }
 
@@ -138,11 +155,19 @@ namespace advent_of_code_2018.Days.Day07
         public Step(string name)
         {
             PreReqs = new List<string>();
+            Parents = new List<string>();
             Name = name;
         }
 
         public string Name { get; set; }
 
         public List<string> PreReqs { get; set; }
+
+        public List<string> Parents { get; set; }
+
+        public bool IsAvailable { get; set; }
+
+        public bool IsComplete { get; set; }
+
     }
 }
