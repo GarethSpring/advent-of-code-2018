@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace advent_of_code_2018.Days.Day17
@@ -19,6 +17,7 @@ namespace advent_of_code_2018.Days.Day17
         private int maxX;
         private int maxY;
         private int minX;
+        private int minY;
 
         public int Part1()
         {
@@ -34,7 +33,7 @@ namespace advent_of_code_2018.Days.Day17
             while (prevCount != newCount)
             {
                 prevCount = GetGridCount();
-                Flow(500, 0, 500);
+                Flow(500, minY, 500);
                 newCount = GetGridCount();
             }
 
@@ -44,7 +43,7 @@ namespace advent_of_code_2018.Days.Day17
 
             for (int x = minX; x <= maxX; x++)
             {
-                for (int y = 0; y <= maxY; y++)
+                for (int y = minY; y <= maxY; y++)
                 {
                     GridSquare gs = grid[x, y];
 
@@ -55,7 +54,45 @@ namespace advent_of_code_2018.Days.Day17
                 }
             }
 
-            return waterCount - 1;
+            return waterCount;
+        }
+
+        public int Part2()
+        {
+            LoadInput();
+
+            BuildEnvironment();
+
+            CalcSettle();
+
+            int prevCount = GetGridCount();
+            int newCount = Int32.MaxValue;
+
+            while (prevCount != newCount)
+            {
+                prevCount = GetGridCount();
+                Flow(500, minY, 500);
+                newCount = GetGridCount();
+            }
+
+            //Visualise();
+
+            int waterCount = 0;
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    GridSquare gs = grid[x, y];
+
+                    if (gs.Status == Material.Water)
+                    {
+                        waterCount++;
+                    };
+                }
+            }
+
+            return waterCount;
         }
 
         private int GetGridCount()
@@ -63,7 +100,7 @@ namespace advent_of_code_2018.Days.Day17
             int count = 0;
             for (int x = minX; x <= maxX; x++)
             {
-                for (int y = 0; y <= maxY; y++)
+                for (int y = minY; y <= maxY; y++)
                 {
                     if (grid[x, y].Status == Material.Water)
                     {
@@ -118,23 +155,20 @@ namespace advent_of_code_2018.Days.Day17
                 }
                 else
                 {
-                    if (x != minX + 1)
+                    if (x != minX)
                     {
                         next = grid[x - 1, y];
 
-                        //if (next.Status == Material.Sand || next.Status == Material.CanReach)
                         if (next.Status == Material.Sand || (next.Status == Material.CanReach && fromX != x - 1))
                         {
                             Flow(x - 1, y, x);
                         }
                     }
 
-                    if (x != maxX - 1)
+                    if (x != maxX)
                     {
                         next = grid[x + 1, y];
 
-
-                        //if (next.Status == Material.Sand || next.Status == Material.CanReach)
                         if (next.Status == Material.Sand || (next.Status == Material.CanReach && fromX != x + 1))
                         {
                             Flow(x + 1, y, x);
@@ -142,19 +176,6 @@ namespace advent_of_code_2018.Days.Day17
                     }
                 }
             }
-
-           
-                        
-            //Flow->
-
-            //    Can Settle? Set Water.Else set Can Reach.
-
-            //    Try Flow Down
-            //else
-            //Try Flow Left & Try Flow Right
-
-            //Else
-            //    Return
         }
 
         private void BuildEnvironment()
@@ -175,7 +196,8 @@ namespace advent_of_code_2018.Days.Day17
                 maxY = maxY2;
             }
 
-            minX = veins.Where(v => v.VeinType == 'y').Min(v => v.B1) -1;
+            minX = veins.Where(v => v.VeinType == 'y').Min(v => v.B1) - 1;
+            minY = veins.Where(v => v.VeinType == 'x').Min(v => v.B1);
 
             grid = new GridSquare[maxX + 1, maxY + 1];
 
@@ -225,13 +247,13 @@ namespace advent_of_code_2018.Days.Day17
 
         private bool CanSettle(int x, int y)
         {
+            // If square to left and right bounded by clay, and all squares under those squares are clay, then can Settle
+
             GridSquare square = grid[x, y];            
 
             if ((square.Status != Material.Sand && square.Status != Material.CanReach) || x == minX || x == maxX || y == maxY)
                 return false;
-
-            // if square to left and right bounded by clay, and all squares under those squares are clay, then yes
-
+            
             bool foundClay = false;
             int x1 = x;
             while (!foundClay && x1 != minX)
@@ -277,7 +299,7 @@ namespace advent_of_code_2018.Days.Day17
 
         private void Visualise()
         {
-            for (int y = 0; y <= maxY; y++)
+            for (int y = minY; y <= maxY; y++)
             {
                 for (int x = minX; x <= maxX; x++)
                 {                  
@@ -326,7 +348,7 @@ namespace advent_of_code_2018.Days.Day17
 
     public enum Material
     {
-        Sand, Clay, Water, Spring, CanReach, CanOnlyReach
+        Sand, Clay, Water, Spring, CanReachB
     };
     
 }
