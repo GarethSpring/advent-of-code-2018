@@ -1,21 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace advent_of_code_2018.Days.Day07
 {
     public class Solution
     {
+        private const int BaseStepTimeSecs = 60;
+
         private List<Tuple<string, string>> steps = new List<Tuple<string, string>>();
 
         private Dictionary<string, Step> stepDict = new Dictionary<string, Step>();
 
         private List<string> stepsComplete = new List<string>();
+
+        private List<Worker> workers = new List<Worker>() { new Worker(), new Worker(), new Worker(), new Worker(), new Worker() };
+
+        private Dictionary<char, int> LetterValues = new Dictionary<char, int>()
+        {
+            { 'A', 1 }, { 'B', 2 }, { 'C', 3 }, { 'D', 4 }, { 'E', 5 }, { 'F', 6 }, { 'G', 7 }, { 'H', 8 },
+            { 'I', 9 }, { 'J', 10 }, { 'K', 11 }, { 'L', 12 }, { 'M', 13 }, { 'N', 14 }, { 'O', 15 }, { 'P', 16 },
+            { 'Q', 17 }, { 'R', 18 }, { 'S', 19 }, { 'T', 20 }, { 'U', 21 }, { 'V', 22 }, { 'W', 23 }, { 'X', 24 }, { 'Y', 25 }, { 'Z', 26 }
+
+        };
+
+        private int secondsElapsed = 0;
 
         private string order = string.Empty;
 
@@ -25,15 +36,30 @@ namespace advent_of_code_2018.Days.Day07
 
             BuildStepList();
 
-            string startStep = GetStartStep();
+            stepDict[GetStartStep()].IsAvailable = true;
 
-            DetermineOrder(startStep);
+            ProcessSteps();
 
             return order;
         }
 
+        public int Part2()
+        {
+            LoadInput();
+
+            BuildStepList();
+
+            stepDict[GetStartStep()].IsAvailable = true;
+
+            ProcessParallelSteps();
+
+            return secondsElapsed;
+        }
+
         private string GetStartStep()
         {
+            List<Step> candidates = new List<Step>();
+
             foreach (Step startCandidate in stepDict.Values)
             {
                 bool foundParents = false;
@@ -48,42 +74,77 @@ namespace advent_of_code_2018.Days.Day07
 
                 if (!foundParents)
                 {
-                    return startCandidate.Name;
+                    candidates.Add(startCandidate);
                 }
             }
 
-            return null;
-        }
-
-        private void DetermineOrder(string startName)
-        {
-            //StringBuilder sb = new StringBuilder();
-            
-            stepDict[startName].IsAvailable = true;
-
-            ProcessSteps();
-        }
+            return candidates.OrderBy(x => x.Name).First().Name;
+        } 
    
 
         private void ProcessSteps()
         {
             while (stepDict.Values.Any(s => s.IsAvailable))
             {
-                // choose first alphabetically available step
+                // Choose first alphabetically available step
                 Step firstAvailable = stepDict.Values.OrderBy(v => v.Name).First(s => s.IsAvailable);
 
                 order += firstAvailable.Name;
                 firstAvailable.IsComplete = true;
                 firstAvailable.IsAvailable = false;
 
-                // now evaluate all the other steps for availablility and flag them 
-
-
-                // Any step where all prereqs are complete
-
+                // Evaluate all the other steps for availablility and flag them 
                 stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach( s => s.IsAvailable = true);
             }
             
+        }
+
+        private void ProcessParallelSteps()
+        {
+            while (stepDict.Values.Any(s => s.IsAvailable))
+            {
+                // Choose first alphabetically available step
+                // Step firstAvailable = stepDict.Values.OrderBy(v => v.Name).First(s => s.IsAvailable);
+                var batch = stepDict.Values.OrderBy(v => v.Name).Where(s => s.IsAvailable)
+                    .Take(workers.Where(w => w.TimeUntilAvailable == 0).Count()).ToList();
+
+                batch.ForEach(s =>
+                {
+
+                    Worker worker = workers.First(w => w.TimeUntilAvailable == 0);
+
+                    if (worker != null)
+                    {
+                        worker.TimeUntilAvailable = 60 + LetterValues[s.Name[0]];
+                        worker.step = s;
+                        order += s.Name;
+                        s.IsComplete = false;
+                        s.IsAvailable = false;
+                    }
+                });
+
+                workers.ForEach(w =>
+                {
+                    if (w.TimeUntilAvailable > 0)
+                    {
+                        w.TimeUntilAvailable = w.TimeUntilAvailable - 1;
+                    }
+                    else
+                    {
+                        if (w.step != null)
+                        {
+                            w.step.IsComplete = true;
+                            w.step = null;
+                        }
+                    }
+                });
+
+                secondsElapsed++;
+                
+                // Evaluate all the other steps for availablility and flag them 
+                stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach(s => s.IsAvailable = true);
+            }
+
         }
 
         private bool PreReqsFilled(Step x)
@@ -120,15 +181,15 @@ namespace advent_of_code_2018.Days.Day07
                 }
             }
 
-            // PreRequs
+            // PreReqs
             foreach (Tuple<string, string> stepTuple in steps)
             {
-                Step step;
+                Step step = new Step(stepTuple.Item2);
 
-                //if (stepDict.ContainsKey(stepTuple.Item2))
-                //{
+                if (stepDict.ContainsKey(stepTuple.Item2))
+                {
                     step = stepDict[stepTuple.Item2];
-                //}
+                }
 
                 step.PreReqs.Add(stepTuple.Item1);
                 step.PreReqs.Sort();
@@ -171,5 +232,12 @@ namespace advent_of_code_2018.Days.Day07
 
         public bool IsComplete { get; set; }
 
+    }
+
+    public class Worker
+    {
+        public int TimeUntilAvailable { get; set; }
+
+        public Step step { get; set; }
     }
 }
