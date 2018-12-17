@@ -26,7 +26,7 @@ namespace advent_of_code_2018.Days.Day07
             BuildStepList();
 
             string startStep = GetStartStep();
-            
+
             DetermineOrder(startStep);
 
             return order;
@@ -71,13 +71,16 @@ namespace advent_of_code_2018.Days.Day07
             {
                 // choose first alphabetically available step
                 Step firstAvailable = stepDict.Values.OrderBy(v => v.Name).First(s => s.IsAvailable);
+
                 order += firstAvailable.Name;
                 firstAvailable.IsComplete = true;
                 firstAvailable.IsAvailable = false;
 
                 // now evaluate all the other steps for availablility and flag them 
 
+
                 // Any step where all prereqs are complete
+
                 stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach( s => s.IsAvailable = true);
             }
             
@@ -108,8 +111,6 @@ namespace advent_of_code_2018.Days.Day07
                 step.Parents.Sort();
             }
 
-
-
             // Add steps with no parents
             foreach (var t in steps)
             {
@@ -132,6 +133,7 @@ namespace advent_of_code_2018.Days.Day07
                 step.PreReqs.Add(stepTuple.Item1);
                 step.PreReqs.Sort();
             }
+
         }       
      
         private void Swap(Step[] array, int i, int j)

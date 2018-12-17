@@ -20,8 +20,11 @@ namespace advent_of_code_2018.Tests.Days.Day07
 
             // not JNGMHBCFVWEUDYTIALQSPXZORK
             /// "  JNGMHBCFVWEUDYTIALQSPXZORK"
+<<<<<<< HEAD
             /// //"JGFMDHNBCIVTUWEQYALSPXZORK"
               /// "JGFMDHNBCIVTUWEQYALSPXZORK"
+=======
+>>>>>>> 1e3fbbf0a9fade467820a6112f0627869d971906
 
             Assert.IsTrue(result == "CABDFE");
         }
