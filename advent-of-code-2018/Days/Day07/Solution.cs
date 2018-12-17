@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace advent_of_code_2018.Days.Day07
@@ -34,6 +30,8 @@ namespace advent_of_code_2018.Days.Day07
 
         private string GetStartStep()
         {
+            List<Step> candidates = new List<Step>();
+
             foreach (Step startCandidate in stepDict.Values)
             {
                 bool foundParents = false;
@@ -48,17 +46,15 @@ namespace advent_of_code_2018.Days.Day07
 
                 if (!foundParents)
                 {
-                    return startCandidate.Name;
+                    candidates.Add(startCandidate);
                 }
             }
 
-            return null;
+            return candidates.OrderBy(x => x.Name).First().Name;
         }
 
         private void DetermineOrder(string startName)
-        {
-            //StringBuilder sb = new StringBuilder();
-            
+        {            
             stepDict[startName].IsAvailable = true;
 
             ProcessSteps();
@@ -69,18 +65,14 @@ namespace advent_of_code_2018.Days.Day07
         {
             while (stepDict.Values.Any(s => s.IsAvailable))
             {
-                // choose first alphabetically available step
+                // Choose first alphabetically available step
                 Step firstAvailable = stepDict.Values.OrderBy(v => v.Name).First(s => s.IsAvailable);
 
                 order += firstAvailable.Name;
                 firstAvailable.IsComplete = true;
                 firstAvailable.IsAvailable = false;
 
-                // now evaluate all the other steps for availablility and flag them 
-
-
-                // Any step where all prereqs are complete
-
+                // Evaluate all the other steps for availablility and flag them 
                 stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach( s => s.IsAvailable = true);
             }
             
@@ -120,15 +112,15 @@ namespace advent_of_code_2018.Days.Day07
                 }
             }
 
-            // PreRequs
+            // PreReqs
             foreach (Tuple<string, string> stepTuple in steps)
             {
-                Step step;
+                Step step = new Step(stepTuple.Item2);
 
-                //if (stepDict.ContainsKey(stepTuple.Item2))
-                //{
+                if (stepDict.ContainsKey(stepTuple.Item2))
+                {
                     step = stepDict[stepTuple.Item2];
-                //}
+                }
 
                 step.PreReqs.Add(stepTuple.Item1);
                 step.PreReqs.Sort();
