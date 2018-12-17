@@ -21,23 +21,7 @@ namespace advent_of_code_2018.Days.Day17
 
         public int Part1()
         {
-            LoadInput();
-
-            BuildEnvironment();
-
-            CalcSettle();
-
-            int prevCount  = GetGridCount();
-            int newCount = Int32.MaxValue;
-
-            while (prevCount != newCount)
-            {
-                prevCount = GetGridCount();
-                Flow(500, minY, 500);
-                newCount = GetGridCount();
-            }
-
-            Visualise();
+            DoWork();
 
             int waterCount = 0;
 
@@ -59,23 +43,7 @@ namespace advent_of_code_2018.Days.Day17
 
         public int Part2()
         {
-            LoadInput();
-
-            BuildEnvironment();
-
-            CalcSettle();
-
-            int prevCount = GetGridCount();
-            int newCount = Int32.MaxValue;
-
-            while (prevCount != newCount)
-            {
-                prevCount = GetGridCount();
-                Flow(500, minY, 500);
-                newCount = GetGridCount();
-            }
-
-            //Visualise();
+            DoWork();
 
             int waterCount = 0;
 
@@ -93,6 +61,27 @@ namespace advent_of_code_2018.Days.Day17
             }
 
             return waterCount;
+        }
+
+        private void DoWork()
+        {
+            LoadInput();
+
+            BuildEnvironment();
+
+            CalcSettle();
+
+            int prevCount = GetGridCount();
+            int newCount = Int32.MaxValue;
+
+            while (prevCount != newCount)
+            {
+                prevCount = GetGridCount();
+                Flow(500, minY, 500);
+                newCount = GetGridCount();
+            }
+
+            Visualise();
         }
 
         private int GetGridCount()
@@ -299,6 +288,11 @@ namespace advent_of_code_2018.Days.Day17
 
         private void Visualise()
         {
+            if (!Debugger.IsAttached)
+            {
+                return;
+            }
+
             for (int y = minY; y <= maxY; y++)
             {
                 for (int x = minX; x <= maxX; x++)
