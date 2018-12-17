@@ -348,7 +348,6 @@ namespace advent_of_code_2018.Days.Day17
 
     public enum Material
     {
-        Sand, Clay, Water, Spring, CanReachB
-    };
-    
+        Sand, Clay, Water, Spring, CanReach
+    };    
 }
