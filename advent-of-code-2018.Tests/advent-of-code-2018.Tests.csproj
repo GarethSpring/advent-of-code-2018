@@ -116,7 +116,10 @@
     <Content Include="Days\Day13\Input\input.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Days\Day16\Input\input.txt">
+    <Content Include="Days\Day16\Input\input1.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day16\Input\input2.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Days\Day17\Input\input.txt">
