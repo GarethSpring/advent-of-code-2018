@@ -62,6 +62,16 @@
     <Compile Include="Days\Day04\Day04Tests.cs" />
     <Compile Include="Days\Day05\Day05Tests.cs" />
     <Compile Include="Days\Day07\Day07Tests.cs" />
+    <Compile Include="Days\Day06\Day06Tests.cs" />
+    <Compile Include="Days\Day08\Day08Tests.cs" />
+    <Compile Include="Days\Day09\Day09Tests.cs" />
+    <Compile Include="Days\Day10\Day10Tests.cs" />
+    <Compile Include="Days\Day11\Day11Tests.cs" />
+    <Compile Include="Days\Day12\Day12Tests.cs" />
+    <Compile Include="Days\Day13\Day13Tests.cs" />
+    <Compile Include="Days\Day14\Day14Tests.cs" />
+    <Compile Include="Days\Day17\Day17Tests.cs" />
+    <Compile Include="Days\Day18\Day18Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -91,7 +101,32 @@
     <Content Include="Days\Day07\Input\input.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Days\Day06\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day08\Input\Input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day09\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day10\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day12\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day13\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day17\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day18\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
