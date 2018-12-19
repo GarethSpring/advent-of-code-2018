@@ -61,6 +61,7 @@
     <Compile Include="Days\Day03\Day03Tests.cs" />
     <Compile Include="Days\Day04\Day04Tests.cs" />
     <Compile Include="Days\Day05\Day05Tests.cs" />
+    <Compile Include="Days\Day07\Day07Tests.cs" />
     <Compile Include="Days\Day06\Day06Tests.cs" />
     <Compile Include="Days\Day08\Day08Tests.cs" />
     <Compile Include="Days\Day09\Day09Tests.cs" />
@@ -95,6 +96,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Days\Day05\Input\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Days\Day07\Input\input.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Days\Day06\Input\input.txt">
