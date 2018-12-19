@@ -23,7 +23,7 @@ namespace advent_of_code_2018.Tests.Days.Day07
 
             var result = solution.Part2();
 
-            //Assert.IsTrue(result == "GJFMDHNBCIVTUWEQYALSPXZORK");
+            Assert.IsTrue(result == 1050);
         }
     }
 }

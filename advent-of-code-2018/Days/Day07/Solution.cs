@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace advent_of_code_2018.Days.Day07
 {
@@ -36,8 +36,8 @@ namespace advent_of_code_2018.Days.Day07
 
             BuildStepList();
 
-            stepDict[GetStartStep()].IsAvailable = true;
-
+            stepDict[GetStartSteps().First().Name].IsAvailable = true;
+            
             ProcessSteps();
 
             return order;
@@ -49,14 +49,14 @@ namespace advent_of_code_2018.Days.Day07
 
             BuildStepList();
 
-            stepDict[GetStartStep()].IsAvailable = true;
+            GetStartSteps().ForEach(s => s.IsAvailable = true);
 
             ProcessParallelSteps();
 
             return secondsElapsed;
         }
 
-        private string GetStartStep()
+        private List<Step> GetStartSteps()
         {
             List<Step> candidates = new List<Step>();
 
@@ -78,7 +78,7 @@ namespace advent_of_code_2018.Days.Day07
                 }
             }
 
-            return candidates.OrderBy(x => x.Name).First().Name;
+            return candidates.OrderBy(x => x.Name).ToList();
         }
 
         private void DetermineOrder(string startName)
@@ -107,23 +107,24 @@ namespace advent_of_code_2018.Days.Day07
 
         private void ProcessParallelSteps()
         {
-            while (stepDict.Values.Any(s => s.IsAvailable))
+            while (stepDict.Values.Count(s => s.IsComplete) < stepDict.Count())
             {
+                Debug.WriteLine($"Second {secondsElapsed}");
+
                 // Choose first alphabetically available step
                 // Step firstAvailable = stepDict.Values.OrderBy(v => v.Name).First(s => s.IsAvailable);
-                var batch = stepDict.Values.OrderBy(v => v.Name).Where(s => s.IsAvailable)
+                var batch = stepDict.Values.OrderBy(v => v.Name).Where(s => s.IsAvailable && !s.IsComplete)
                     .Take(workers.Where(w => w.TimeUntilAvailable == 0).Count()).ToList();
 
                 batch.ForEach(s =>
                 {
-
-                    Worker worker = workers.First(w => w.TimeUntilAvailable == 0);
+                    Worker worker = workers.FirstOrDefault(w => w.TimeUntilAvailable == 0 && w.step == null);
 
                     if (worker != null)
                     {
-                        worker.TimeUntilAvailable = 60 + LetterValues[s.Name[0]];
+                        worker.TimeUntilAvailable = BaseStepTimeSecs + LetterValues[s.Name[0]] - 1; // Count this second as productive
+                        Debug.WriteLine($"Starting Step {s.Name} at {secondsElapsed} which will take {worker.TimeUntilAvailable} secs");
                         worker.step = s;
-                        order += s.Name;
                         s.IsComplete = false;
                         s.IsAvailable = false;
                     }
@@ -139,16 +140,26 @@ namespace advent_of_code_2018.Days.Day07
                     {
                         if (w.step != null)
                         {
+                            Debug.WriteLine($"Flagging step {w.step.Name} as complete");
                             w.step.IsComplete = true;
+                            order += w.step.Name;
                             w.step = null;
                         }
                     }
                 });
 
                 secondsElapsed++;
-                
+
                 // Evaluate all the other steps for availablility and flag them 
-                stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach(s => s.IsAvailable = true);
+                var toFlag = stepDict.Values.Where(
+                    x => !x.IsComplete && PreReqsFilled(x) && !workers.Where(w => w.step != null).Any(w => w.step.Name == x.Name))
+                    .ToList();
+
+                toFlag.ForEach(s =>
+                {
+                    s.IsAvailable = true;
+                    Debug.WriteLine($"Flagging step {s.Name} as available");
+                });
             }
 
         }
