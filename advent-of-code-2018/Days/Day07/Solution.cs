@@ -79,7 +79,14 @@ namespace advent_of_code_2018.Days.Day07
             }
 
             return candidates.OrderBy(x => x.Name).First().Name;
-        } 
+        }
+
+        private void DetermineOrder(string startName)
+        {            
+            stepDict[startName].IsAvailable = true;
+
+            ProcessSteps();
+        }
    
 
         private void ProcessSteps()
@@ -94,9 +101,8 @@ namespace advent_of_code_2018.Days.Day07
                 firstAvailable.IsAvailable = false;
 
                 // Evaluate all the other steps for availablility and flag them 
-                stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach( s => s.IsAvailable = true);
-            }
-            
+                stepDict.Values.Where(x => !x.IsComplete && PreReqsFilled(x)).ToList().ForEach(s => s.IsAvailable = true);
+            }    
         }
 
         private void ProcessParallelSteps()
