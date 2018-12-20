@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace advent_of_code_2018.Days.Day16
     public class Solution
     {
         private Dictionary<string, Func<int, int, int, int>> opCodes = new Dictionary<string, Func<int, int, int, int>>();
+        Dictionary<int, string> opCodeLookup = new Dictionary<int, string>();
         private List<Sample> samples = new List<Sample>();
 
         private const string InstructionMatcher = @"([0123456789]{1,2})\s([0123456789]{1,2})\s([0123456789]{1,2})\s([0123456789]{1,2})";
@@ -20,9 +22,29 @@ namespace advent_of_code_2018.Days.Day16
 
         public int Part1()
         {
+            LoadInput();            
+
+            Init();
+
+            int result = CheckSamples();
+
+            return result;
+        }
+
+        public int Part2()
+        {
             LoadInput();
 
-            registers = new int[4] { 0, 0, 0, 0 };
+            Init();
+
+            DiscoverOpCodes();
+
+            return 0;
+        }
+
+        private void Init()
+        {
+            registers = new int[] { 0, 0, 0, 0 };
 
             opCodes.Add("addr", Addr);
             opCodes.Add("addi", Addi);
@@ -40,16 +62,12 @@ namespace advent_of_code_2018.Days.Day16
             opCodes.Add("eqir", Eqir);
             opCodes.Add("eqri", Eqri);
             opCodes.Add("eqrr", Eqrr);
-
-            int result = CheckSamples();
-
-            return result;
         }
 
         private int CheckSamples()
         {
             int sampleCounter = 0;
-
+            
             foreach(Sample s in samples)
             {            
 
@@ -78,15 +96,66 @@ namespace advent_of_code_2018.Days.Day16
                         s.OpCodeMatches++;
                 }
                 
-                if (s.OpCodeMatches == 1)
-                {
-                    Debug.WriteLine($"{ s.Instruction[0]}, sample: { sampleCounter} ");   
-                }
+               
 
                 sampleCounter++;
             }
 
             return samples.Count(s => s.OpCodeMatches >= 3);
+        }
+
+        private void DiscoverOpCodes()
+        {           
+            string key = string.Empty;
+
+            while (opCodeLookup.Count < opCodes.Count)
+            {
+                List<int> matchedKeys = new List<int>();
+                int opCodeMatches = 0;
+
+                foreach (var func in opCodes.Values)                  
+                {                                       
+                    foreach (Sample s in samples)
+                    {
+                        registers[0] = s.Before[0];
+                        registers[1] = s.Before[1];
+                        registers[2] = s.Before[2];
+                        registers[3] = s.Before[3];
+
+                        // execute instruction in sample
+                        func(s.Instruction[1], s.Instruction[2], s.Instruction[3]);
+
+                        bool match = true;
+
+                        for (int i = 0; i < 4; i++)
+                        {
+                            if (registers[i] != s.After[i])
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                        
+                        if (match)                        
+                        {
+                            opCodeMatches++;
+                            key = opCodes.FirstOrDefault(x => x.Value == func).Key;
+                            matchedKeys.Add(s.Instruction[0]);
+                        }
+                    }
+
+                   
+                }
+
+                matchedKeys = matchedKeys.Where(k => !opCodeLookup.Values.Contains(key)).Distinct().ToList();
+
+                if (matchedKeys.Count() == 1)
+                {
+                    opCodeLookup.Add(s.Instruction[0], key);
+                    key = string.Empty;
+
+                }
+            }
         }
 
         private int Addr(int a, int b, int c)
